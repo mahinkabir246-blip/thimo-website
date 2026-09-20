@@ -1,1 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>THIMO Product Upload</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 30px 15px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 30px;
+    }
+
+    .product {
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .product h2 {
+      margin-top: 0;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      margin: 12px 0;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      padding: 13px;
+      border-radius: 10px;
+      background: #111;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .preview {
+      width: 100%;
+      max-height: 250px;
+      object-fit: contain;
+      margin-top: 15px;
+      border-radius: 10px;
+      display: none;
+      background: #f5f5f5;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .url-box {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>THIMO</h1>
+
+    <div class="subtitle">
+      Product PNG Upload
+    </div>
+
+
+    <!-- DRAGON -->
+    <div class="product">
+
+      <h2>Dragon Fresh</h2>
+
+      <input
+        type="file"
+        id="dragonFile"
+        accept="image/png"
+      >
+
+      <img
+        id="dragonPreview"
+        class="preview"
+      >
+
+      <button
+        onclick="uploadImage('dragon')"
+        id="dragonButton"
+      >
+        Upload Dragon PNG
+      </button>
+
+      <div
+        id="dragonStatus"
+        class="status"
+      ></div>
+
+      <input
+        id="dragonUrl"
+        class="url-box"
+        readonly
+        placeholder="Uploaded image URL"
+      >
+
+    </div>
+
+
+    <!-- BADAM -->
+    <div class="product">
+
+      <h2>Badam Fresh</h2>
+
+      <input
+        type="file"
+        id="badamFile"
+        accept="image/png"
+      >
+
+      <img
+        id="badamPreview"
+        class="preview"
+      >
+
+      <button
+        onclick="uploadImage('badam')"
+        id="badamButton"
+      >
+        Upload Badam PNG
+      </button>
+
+      <div
+        id="badamStatus"
+        class="status"
+      ></div>
+
+      <input
+        id="badamUrl"
+        class="url-box"
+        readonly
+        placeholder="Uploaded image URL"
+      >
+
+    </div>
+
+
+    <!-- PINEAPPLE -->
+    <div class="product">
+
+      <h2>Pineapple Fresh</h2>
+
+      <input
+        type="file"
+        id="pineappleFile"
+        accept="image/png"
+      >
+
+      <img
+        id="pineapplePreview"
+        class="preview"
+      >
+
+      <button
+        onclick="uploadImage('pineapple')"
+        id="pineappleButton"
+      >
+        Upload Pineapple PNG
+      </button>
+
+      <div
+        id="pineappleStatus"
+        class="status"
+      ></div>
+
+      <input
+        id="pineappleUrl"
+        class="url-box"
+        readonly
+        placeholder="Uploaded image URL"
+      >
+
+    </div>
+
+  </div>
+
+
+  <script type="module">
+
+    import { upload } from 'https://esm.sh/@vercel/blob@2.4.0/client';
+
+
+    window.uploadImage = async function(product) {
+
+      const fileInput =
+        document.getElementById(product + 'File');
+
+      const preview =
+        document.getElementById(product + 'Preview');
+
+      const button =
+        document.getElementById(product + 'Button');
+
+      const status =
+        document.getElementById(product + 'Status');
+
+      const urlBox =
+        document.getElementById(product + 'Url');
+
+
+      const file = fileInput.files[0];
+
+
+      if (!file) {
+
+        status.textContent =
+          'Please select a PNG image first.';
+
+        status.className = 'status error';
+
+        return;
+      }
+
+
+      if (file.type !== 'image/png') {
+
+        status.textContent =
+          'Only PNG files are allowed.';
+
+        status.className = 'status error';
+
+        return;
+      }
+
+
+      if (file.size > 10 * 1024 * 1024) {
+
+        status.textContent =
+          'Maximum file size is 10 MB.';
+
+        status.className = 'status error';
+
+        return;
+      }
+
+
+      preview.src =
+        URL.createObjectURL(file);
+
+      preview.style.display = 'block';
+
+
+      button.disabled = true;
+
+      button.textContent = 'Uploading...';
+
+      status.textContent = 'Uploading...';
+
+      status.className = 'status';
+
+
+      try {
+
+        const blob = await upload(
+          `products/${product}.png`,
+          file,
+          {
+            access: 'public',
+
+            handleUploadUrl: '/api/upload'
+          }
+        );
+
+
+        urlBox.value = blob.url;
+
+
+        status.textContent =
+          '✓ Upload successful!';
+
+        status.className =
+          'status success';
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+          'Upload failed: ' +
+          error.message;
+
+        status.className =
+          'status error';
+
+      }
+
+
+      button.disabled = false;
+
+      button.textContent =
+        `Upload ${product} PNG`;
+
+    };
+
+
+  </script>
+
+</body>
+</html>
