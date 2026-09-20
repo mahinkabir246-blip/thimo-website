@@ -1,39 +1,34 @@
 import { handleUpload } from '@vercel/blob/client';
 
-export default async function handler(request) {
-  try {
-    const body = await request.json();
+export default async function handler(req, res) {
+  // শুধু POST রিকোয়েস্ট allow করুন
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-    const response = await handleUpload({
-      request,
+  try {
+    const body = req.body;
+
+    const jsonResponse = await handleUpload({
+      request: req,
       body,
       onBeforeGenerateToken: async (pathname) => {
         return {
-          allowedContentTypes: ['image/png'],
+          allowedContentTypes: ['image/png', 'image/jpeg', 'image/webp'],
           maximumSizeInBytes: 10 * 1024 * 1024,
           addRandomSuffix: true,
-          tokenPayload: JSON.stringify({
-            uploadedAt: Date.now()
-          })
         };
       },
-
       onUploadCompleted: async ({ blob }) => {
         console.log('Upload completed:', blob.url);
-      }
+      },
     });
 
-    return Response.json(response);
+    return res.status(200).json(jsonResponse);
   } catch (error) {
     console.error(error);
-
-    return Response.json(
-      {
-        error: error.message || 'Upload failed'
-      },
-      {
-        status: 500
-      }
-    );
+    return res.status(500).json({
+      error: error.message || 'Upload failed',
+    });
   }
 }
