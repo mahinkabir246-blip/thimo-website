@@ -1420,11 +1420,7 @@
   refreshProductImages();
   if(new URLSearchParams(location.search).get('admin')==='1')setupAdmin();
 })();
-</script>
-   <!-- Vercel Blob Client SDK (ES module) -->
-<script type="module">
-  import { upload } from 'https://esm.sh/@vercel/blob@0.27.0/client';
-
+<script>
   document.getElementById('uploadBtn').addEventListener('click', async () => {
     const fileInput = document.getElementById('fileInput');
     const status = document.getElementById('status');
@@ -1440,14 +1436,51 @@
     status.style.color = 'blue';
 
     try {
-      const blob = await upload(file.name, file, {
-        access: 'public',
-        handleUploadUrl: '/api/upload',
+      // Step 1: Vercel থেকে upload token নিন
+      const tokenRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'blob.generate-client-token',
+          payload: {
+            pathname: file.name,
+            callbackUrl: window.location.href,
+            clientPayload: null,
+            multipart: false,
+          },
+        }),
       });
+
+      if (!tokenRes.ok) {
+        const err = await tokenRes.json();
+        throw new Error(err.error || 'Failed to get upload token');
+      }
+
+      const { clientToken } = await tokenRes.json();
+
+      // Step 2: সরাসরি Vercel Blob-এ upload করুন
+      const uploadRes = await fetch(
+        `https://blob.vercel-storage.com/${encodeURIComponent(file.name)}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${clientToken}`,
+            'x-content-type': file.type,
+            'x-add-random-suffix': '1',
+          },
+          body: file,
+        }
+      );
+
+      if (!uploadRes.ok) {
+        throw new Error('Upload to Vercel Blob failed');
+      }
+
+      const blob = await uploadRes.json();
 
       status.innerHTML = '✅ Uploaded: <a href="' + blob.url + '" target="_blank">' + blob.url + '</a>';
       status.style.color = 'green';
-      console.log('Uploaded URL:', blob.url);
+
     } catch (error) {
       console.error(error);
       status.textContent = '❌ Upload failed: ' + error.message;
