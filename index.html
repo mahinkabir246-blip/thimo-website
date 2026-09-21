@@ -1421,5 +1421,56 @@
   if(new URLSearchParams(location.search).get('admin')==='1')setupAdmin();
 })();
 </script>
+    if(new URLSearchParams(location.search).get('admin')==='1')setupAdmin();
+})();
+</script>
+
+<!-- ===== Image Upload Section ===== -->
+<div style="padding: 20px; max-width: 500px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px;">
+  <h3>Upload Image</h3>
+  <input type="file" id="fileInput" accept="image/png, image/jpeg, image/webp" />
+  <button id="uploadBtn" style="margin-top: 10px; padding: 8px 16px; background: #000; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+    Upload Image
+  </button>
+  <p id="status" style="margin-top: 10px;"></p>
+</div>
+
+<!-- Vercel Blob Client SDK -->
+<script src="https://unpkg.com/@vercel/blob@0.27.0/dist/client.umd.js"></script>
+
+<script>
+  document.getElementById('uploadBtn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('fileInput');
+    const status = document.getElementById('status');
+    const file = fileInput.files[0];
+
+    if (!file) {
+      status.textContent = '⚠️ Please select a file first';
+      status.style.color = 'orange';
+      return;
+    }
+
+    status.textContent = '⏳ Uploading...';
+    status.style.color = 'blue';
+
+    try {
+      const blob = await VercelBlob.upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      });
+
+      status.innerHTML = '✅ Uploaded: <a href="' + blob.url + '" target="_blank">' + blob.url + '</a>';
+      status.style.color = 'green';
+      console.log('Uploaded URL:', blob.url);
+    } catch (error) {
+      console.error(error);
+      status.textContent = '❌ Upload failed: ' + error.message;
+      status.style.color = 'red';
+    }
+  });
+</script>
+
+</body>
+</html>
 </body>
 </html>
